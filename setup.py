@@ -93,7 +93,7 @@ setup(
         "django>=1.8",
         "pytz",
         "six",
-        "django-ipware==2.1.0"
+        "django-ipware"
     ],
     extras_require={
         "testing": tests_require,
