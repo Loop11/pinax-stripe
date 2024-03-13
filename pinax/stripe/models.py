@@ -6,12 +6,10 @@ import decimal
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 
 import stripe
-from jsonfield.fields import JSONField
 
 from .conf import settings
 from .managers import ChargeManager, CustomerManager
@@ -74,7 +72,6 @@ class StripeAccountFromCustomerMixin(object):
     stripe_account_stripe_id.fget.short_description = "Stripe Account"
 
 
-@python_2_unicode_compatible
 class Plan(UniquePerAccountStripeObject):
     amount = models.DecimalField(decimal_places=2, max_digits=9)
     currency = models.CharField(max_length=15, blank=False)
@@ -83,7 +80,7 @@ class Plan(UniquePerAccountStripeObject):
     name = models.CharField(max_length=150)
     statement_descriptor = models.TextField(blank=True)
     trial_period_days = models.IntegerField(null=True, blank=True)
-    metadata = JSONField(null=True, blank=True)
+    metadata = models.JSONField(null=True, blank=True)
 
     def __str__(self):
         return "{} ({}{})".format(self.name, CURRENCY_SYMBOLS.get(self.currency, ""), self.amount)
@@ -108,7 +105,6 @@ class Plan(UniquePerAccountStripeObject):
         )
 
 
-@python_2_unicode_compatible
 class Coupon(StripeObject):
 
     amount_off = models.DecimalField(decimal_places=2, max_digits=9, null=True, blank=True)
@@ -117,7 +113,7 @@ class Coupon(StripeObject):
     duration_in_months = models.PositiveIntegerField(null=True, blank=True)
     livemode = models.BooleanField(default=False)
     max_redemptions = models.PositiveIntegerField(null=True, blank=True)
-    metadata = JSONField(null=True, blank=True)
+    metadata = models.JSONField(null=True, blank=True)
     percent_off = models.PositiveIntegerField(null=True, blank=True)
     redeem_by = models.DateTimeField(null=True, blank=True)
     times_redeemed = models.PositiveIntegerField(null=True, blank=True)
@@ -132,7 +128,6 @@ class Coupon(StripeObject):
         return "Coupon for {}, {}".format(description, self.duration)
 
 
-@python_2_unicode_compatible
 class EventProcessingException(models.Model):
 
     event = models.ForeignKey("Event", null=True, blank=True, on_delete=models.CASCADE)
@@ -145,14 +140,13 @@ class EventProcessingException(models.Model):
         return "<{}, pk={}, Event={}>".format(self.message, self.pk, self.event)
 
 
-@python_2_unicode_compatible
 class Event(AccountRelatedStripeObject):
 
     kind = models.CharField(max_length=250)
     livemode = models.BooleanField(default=False)
     customer = models.ForeignKey("Customer", null=True, blank=True, on_delete=models.CASCADE)
-    webhook_message = JSONField()
-    validated_message = JSONField(null=True, blank=True)
+    webhook_message = models.JSONField()
+    validated_message = models.JSONField(null=True, blank=True)
     valid = models.NullBooleanField(null=True, blank=True)
     processed = models.BooleanField(default=False)
     request = models.CharField(max_length=100, blank=True)
@@ -197,7 +191,7 @@ class Transfer(AccountRelatedStripeObject):
     failure_code = models.TextField(null=True, blank=True)
     failure_message = models.TextField(null=True, blank=True)
     livemode = models.BooleanField(default=False)
-    metadata = JSONField(null=True, blank=True)
+    metadata = models.JSONField(null=True, blank=True)
     method = models.TextField(null=True, blank=True)
     reversed = models.BooleanField(default=False)
     source_transaction = models.TextField(null=True, blank=True)
@@ -256,7 +250,6 @@ class UserAccount(models.Model):
         return "UserAccount(pk={self.pk!r}, user={self.user!r}, account={self.account!r}, customer={self.customer!r})".format(self=self)
 
 
-@python_2_unicode_compatible
 class Customer(AccountRelatedStripeObject):
 
     user = models.OneToOneField(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.CASCADE)
@@ -491,7 +484,7 @@ class Charge(StripeAccountFromCustomerMixin, StripeObject):
     fee_currency = models.CharField(max_length=10, null=True, blank=True)
 
     transfer_group = models.TextField(null=True, blank=True)
-    outcome = JSONField(null=True, blank=True)
+    outcome = models.JSONField(null=True, blank=True)
 
     objects = ChargeManager()
 
@@ -541,7 +534,6 @@ class Charge(StripeAccountFromCustomerMixin, StripeObject):
         return Card.objects.filter(stripe_id=self.source).first()
 
 
-@python_2_unicode_compatible
 class Account(StripeObject):
 
     INTERVAL_CHOICES = (
@@ -588,7 +580,7 @@ class Account(StripeObject):
     # The type of the Stripe account. Can be "standard", "express", or "custom".
     type = models.TextField(null=True, blank=True)
 
-    metadata = JSONField(null=True, blank=True)
+    metadata = models.JSONField(null=True, blank=True)
 
     stripe_publishable_key = models.CharField(null=True, blank=True, max_length=100)
 
@@ -613,7 +605,7 @@ class Account(StripeObject):
     verification_disabled_reason = models.TextField(null=True, blank=True)
     verification_due_by = models.DateTimeField(null=True, blank=True)
     verification_timestamp = models.DateTimeField(null=True, blank=True)
-    verification_fields_needed = JSONField(null=True, blank=True)
+    verification_fields_needed = models.JSONField(null=True, blank=True)
     authorized = models.BooleanField(default=True)
 
     @property
@@ -644,7 +636,7 @@ class BankAccount(StripeObject):
     default_for_currency = models.BooleanField(default=False)
     fingerprint = models.TextField()
     last4 = models.CharField(max_length=4)
-    metadata = JSONField(null=True, blank=True)
+    metadata = models.JSONField(null=True, blank=True)
     routing_number = models.TextField()
     status = models.TextField()
 

@@ -89,7 +89,6 @@ setup(
     ],
     install_requires=[
         "django-appconf>=1.0.1",
-        "jsonfield>=1.0.3",
         "stripe>=2.0",
         "django>=1.8",
         "pytz",

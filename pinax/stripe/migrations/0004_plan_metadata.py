@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 
 from django.db import migrations
 
-import jsonfield.fields
+
 
 
 class Migration(migrations.Migration):
@@ -17,6 +17,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='plan',
             name='metadata',
-            field=jsonfield.fields.JSONField(null=True),
+            field=models.JSONField(null=True),
         ),
     ]
